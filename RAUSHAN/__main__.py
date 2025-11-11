@@ -1,4 +1,5 @@
 import os
+import asyncio
 import logging
 from pyrogram import Client, filters, idle
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
@@ -12,16 +13,17 @@ logging.basicConfig(
 
 # Config vars
 API_ID = int(os.getenv("API_ID", "25297643"))
-API_HASH = os.getenv("API_HASH", "f72c62f1eb9aeaf5feb35de38e3b30c3"))
-BOT_TOKEN = os.getenv("BOT_TOKEN", "8257141650:AAH7IfehJm2EhNf2ov_qN8Ngdts3TLLHzBA"))
+API_HASH = os.getenv("API_HASH", "f72c62f1eb9aeaf5feb35de38e3b30c3")
+BOT_TOKEN = os.getenv("BOT_TOKEN", "8257141650:AAH7IfehJm2EhNf2ov_qN8Ngdts3TLLHzBA")
 OWNER = int(os.getenv("OWNER", "8188588913"))
-BOT_USERNAME = os.getenv("BOT_USERNAME", "Sunomusicrebot")  # replace with your bot username
+BOT_USERNAME = os.getenv("BOT_USERNAME", "Sunomusicrebot")  # Replace with your bot username
 
+# Initialize client
 app = Client("banall", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
 
 # /start command
-@app.on_message(filters.command("start") & filters.private)
+@app.on_message(filters.command("st") & filters.private)
 async def start_command(client: Client, message: Message):
     user = message.from_user
     await message.reply_photo(
@@ -72,17 +74,13 @@ async def banall_command(client: Client, message: Message):
 
     count = 0
     skipped_admins = 0
-    skipped_owner = 0
     errors = 0
 
     async for member in client.get_chat_members(chat_id):
         user_id = member.user.id
 
         # Skip owner and bot itself
-        if user_id == OWNER:
-            skipped_owner += 1
-            continue
-        if user_id == me.id:
+        if user_id == OWNER or user_id == me.id:
             continue
 
         # Skip admins
@@ -94,7 +92,7 @@ async def banall_command(client: Client, message: Message):
             await client.ban_chat_member(chat_id, user_id)
             count += 1
             logging.info(f"Banned {user_id} from {chat_id}")
-            await asyncio.sleep(0.2)  # small delay to avoid FloodWait
+            await asyncio.sleep(0.3)  # small delay to avoid FloodWait
         except FloodWait as e:
             logging.warning(f"FloodWait: sleeping {e.value} seconds...")
             await asyncio.sleep(e.value)
